@@ -26,15 +26,21 @@ def main():
         sys.exit(1)
 
     # Create output folders
-    train_images_dir = os.path.join(args.output, "train", "images")
-    val_images_dir = os.path.join(args.output, "val", "images")
-    train_labels_dir = os.path.join(args.output, "train", "labels")
-    val_labels_dir = os.path.join(args.output, "val", "labels")
+    train_images_dir = os.path.join(args.output, "images", "train")
+    val_images_dir = os.path.join(args.output, "images", "val")
+    test_images_dir = os.path.join(args.output, "images", "test")
+    
+    train_labels_dir = os.path.join(args.output, "labels", "train")
+    val_labels_dir = os.path.join(args.output, "labels", "val")
+    test_labels_dir = os.path.join(args.output, "labels", "test")
     
     os.makedirs(train_images_dir, exist_ok=True)
     os.makedirs(val_images_dir, exist_ok=True)
+    os.makedirs(test_images_dir, exist_ok=True)
+    
     os.makedirs(train_labels_dir, exist_ok=True)
     os.makedirs(val_labels_dir, exist_ok=True)
+    os.makedirs(test_labels_dir, exist_ok=True)
 
     image_extensions = {".jpg", ".jpeg", ".png", ".bmp", ".gif", ".tiff"}
     
@@ -42,9 +48,13 @@ def main():
               if f.is_file() and os.path.splitext(f.name)[1].lower() in image_extensions]
     
     random.shuffle(images)
-    split_index = int(len(images) * args.split)
-    train_images = images[:split_index]
-    val_images = images[split_index:]
+    total_images = len(images)
+    train_split = int(total_images * 0.8)
+    val_split = int(total_images * 0.1)
+    
+    train_images = images[:train_split]
+    val_images = images[train_split:train_split + val_split]
+    test_images = images[train_split + val_split:]
 
     def move_files(files, src_dir, dest_dir, label_src, label_dest):
         for file in files:
@@ -61,8 +71,9 @@ def main():
 
     move_files(train_images, args.dir_images, train_images_dir, args.dir_labels, train_labels_dir)
     move_files(val_images, args.dir_images, val_images_dir, args.dir_labels, val_labels_dir)
+    move_files(test_images, args.dir_images, test_images_dir, args.dir_labels, test_labels_dir)
 
-    print(f"Dataset split completed: {len(train_images)} training images, {len(val_images)} validation images.")
+    print(f"Dataset split completed: {len(train_images)} training images, {len(val_images)} validation images, {len(test_images)} testing images.")
 
 if __name__ == "__main__":
     main()
